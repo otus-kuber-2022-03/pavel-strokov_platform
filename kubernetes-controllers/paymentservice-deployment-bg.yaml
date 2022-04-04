@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: payment
+  name: paymentservice
   labels:
-    tier: payment
+    tier: paymentservice
 spec:
   replicas: 3
   strategy:
@@ -13,12 +13,12 @@ spec:
       maxSurge: 3
   selector:
     matchLabels:
-      tier: payment
+      tier: paymentservice
   template:
     metadata:
       labels:
-        app: payment
-        tier: payment
+        app: paymentservice
+        tier: paymentservice
     spec:
       containers:
         - name: server
