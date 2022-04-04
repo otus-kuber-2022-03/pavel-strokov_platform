@@ -13,7 +13,7 @@ spec:
       app: prometheus
   template:
     metadata:
-      name: prometheus-node-exporter
+      name: prometheus-node-exporterы
       labels:
         app: prometheus
         component: node-exporter
