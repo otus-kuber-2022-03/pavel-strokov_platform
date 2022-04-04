@@ -559,19 +559,3 @@ prometheus-node-exporter-lpdnp                1/1     Running   0             55
 prometheus-node-exporter-sqx65                1/1     Running   0             27s
 ```
 node-exporter запущен на всех 6 узлах кластера, как и требовалось в задании.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
