@@ -383,7 +383,7 @@ REVISION  CHANGE-CAUSE
 Делаем откат
 
 ```bash
-kubectl rollout undo deployment payment --to-revision=3 | kubectl get rs -l app=payment -w
+kubectl rollout undo deployment paymentservice --to-revision=3 | kubectl get rs -l app=paymentservice -w
 ```
 
 После этого  картина меняется
@@ -427,7 +427,7 @@ payment-56f7c49bf8   3         3         0       51s
 Обновляем версию в манифесте на v0.0.2
 
 ```bash
-kubectl apply -f paymentservice-deployment.yaml | kubectl get pods -l app=payment -w
+kubectl apply -f paymentservice-deployment.yaml | kubectl get pods -l app=paymentservice -w
 NAME                       READY   STATUS    RESTARTS   AGE
 payment-56f7c49bf8-86m2z   1/1     Running   0          7m29s
 payment-56f7c49bf8-hfddw   1/1     Running   0          7m29s
@@ -456,15 +456,15 @@ payment-56f7c49bf8-hfddw   1/1     Terminating         0          8m16s
 История изменений 
 
 ```bash
-kubectl rollout history deployment payment
-deployment.apps/payment 
+kubectl rollout history deployment paymentservice
+deployment.apps/paymentservice 
 REVISION  CHANGE-CAUSE
 1         <none>
 2         <none>
 ```
 Делаем откат 
 ```bash
-kubectl rollout undo deployment payment --to-revision=1 | kubectl get rs -l app=payment -w
+kubectl rollout undo deployment paymentservice --to-revision=1 | kubectl get rs -l app=paymentservice -w
 NAME                 DESIRED   CURRENT   READY   AGE
 payment-56f7c49bf8   0         0         0       14m
 payment-79cfb49587   3         3         3       6m33s
