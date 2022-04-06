@@ -7,6 +7,9 @@ roleRef:
   kind: ClusterRole
   name: cluster-pod-reader
 subjects:
-- kind: ServiceAccount
-  name: carol
+#- kind: ServiceAccount
+#  name: carol
+#  namespace: prometheus
+- kind: Group
+  name: system:authenticated
   namespace: prometheus
