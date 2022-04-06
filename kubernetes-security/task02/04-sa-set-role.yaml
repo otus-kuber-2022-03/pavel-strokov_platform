@@ -8,5 +8,5 @@ roleRef:
   name: cluster-pod-reader
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: carol
   namespace: prometheus
