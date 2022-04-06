@@ -1,15 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: cluster-admin-binding
+  name: cluster-pod-viwer
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: admin
+  name: cluster-pod-reader
 subjects:
 - kind: ServiceAccount
-  name: bob
-  namespace: default
-
-
-  
+  name: default
+  namespace: prometheus
