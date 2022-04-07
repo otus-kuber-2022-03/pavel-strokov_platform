@@ -559,3 +559,120 @@ prometheus-node-exporter-lpdnp                1/1     Running   0             55
 prometheus-node-exporter-sqx65                1/1     Running   0             27s
 ```
 node-exporter запущен на всех 6 узлах кластера, как и требовалось в задании.
+
+
+# Выполнено ДЗ № 3
+
+ - [*] Основное ДЗ
+ - [ ] Задание со *
+
+## В процессе сделано:
+### Задача 1
+Создан манифест yaml [01-sa-bob.yaml](./kubernetes-security/task01/01-sa-bob.yaml) для создания серисного аккаунта **bob**
+
+Применение манифеста создаёт serviceaccount
+
+```bash
+kubectl apply -f 01-sa-bob.yaml 
+serviceaccount/bob created
+```
+
+
+Создан манифест yaml [02-role-binding.yaml](./kubernetes-security/task01/02-role-binding.yaml) для привязки серисного аккаунта **bob** к роли **admin** в рамках всего кластера.
+
+Применение этого манифеста создаёт привязку аккаунта к роли
+
+```bash
+kubectl apply -f 02-role-binding.yaml 
+clusterrolebinding.rbac.authorization.k8s.io/cluster-admin-binding created
+```
+
+Создан манифест yaml [01-sa-dave.yaml](./kubernetes-security/task01/01-sa-dave.yaml) для создания серисного аккаунта **dave**
+
+Применение манифеста
+
+```bash
+kubectl apply -f 03-sa-dave.yaml 
+serviceaccount/dave created
+```
+
+По умолчанию сервис аккаунт не имеет доступа к кластеру.
+
+
+### Задание 2
+
+Создан манифест yaml [01-namespace.yaml](./kubernetes-security/task02/01-namespace.yaml) для создания неймспейса **prometheus**
+
+Применяем
+
+```bash
+kubectl apply -f 01-namespace.yaml 
+namespace/prometheus created
+```
+
+Создан манифест yaml [02-sa-carol.yaml](./kubernetes-security/task02/02-sa-carol.yaml) для создания серисного аккаунта **carol**
+
+Применяем
+
+```bash
+kubectl apply -f 02-sa-carol.yaml 
+serviceaccount/carol created
+```
+
+Создаём манифест [03-role-pod-reader.yaml](./kubernetes-security/task02/03-role-pod-reader.yaml) для роли, котораяя может выполнять ограниченный набор действий в кластере.
+
+Применяем
+
+```bash
+kubectl apply -f 03-role-pod-reader.yaml -n prometheus
+role.rbac.authorization.k8s.io/cluster-pod-reader created
+```
+
+Создаём манифест [04-sa-set-role.yaml](./kubernetes-security/task02/04-sa-set-role.yaml) для применения этой роли ко всем аккаунтам неймспейса **prometheus**
+
+```bash
+kubectl apply -f 04-sa-set-role.yaml -n prometheus
+clusterrolebinding.rbac.authorization.k8s.io/cluster-pod-viwer created
+```
+
+### Задание 3
+
+Создан манифест yaml [01-namespace.yaml](./kubernetes-security/task03/01-namespace.yaml) для создания неймспейса **dev**
+
+```bash
+kubectl apply -f 01-namespace.yaml 
+namespace/dev created
+```
+Сервис аккаунт **jane** [02-sa-jane.yaml](./kubernetes-security/task03/02-sa-jane.yaml)
+```bash
+kubectl apply -f 02-sa-jane.yaml 
+serviceaccount/jane created
+```
+
+Привязка **jane** к роли **admin** в неймспейс **dev**
+
+```bash
+kubectl apply -f 03-role-jane.yaml 
+rolebinding.rbac.authorization.k8s.io/dev-admin-binding created
+```
+
+Сервис аккаунт **ken** [04-sa-ken.yaml](./kubernetes-security/task03/04-sa-ken.yaml)
+
+```bash
+kubectl apply -f 04-sa-ken.yaml 
+serviceaccount/ken created
+```
+
+Привязка **ken** к роли **viewer** в неймспейс **dev**
+
+```bash
+kubectl apply -f 05-role-ken.yaml 
+rolebinding.rbac.authorization.k8s.io/dev-viewer-binding created
+```
+
+
+
+
+
+
+
