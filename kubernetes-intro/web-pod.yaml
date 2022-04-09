@@ -8,10 +8,10 @@ spec:
   containers:
   - name: web
     image: pstrokov/homework:latest
-    #readinessProbe: # Добавим проверку готовности
-    #  httpGet: # веб-сервера отдавать
-    #    path: /index.html # контент
-    #    port: 80 
+    readinessProbe: # Добавим проверку готовности
+      httpGet: # веб-сервера отдавать
+        path: /index.html # контент
+        port: 8000 
     livenessProbe:
       tcpSocket: 
         port: 8000
