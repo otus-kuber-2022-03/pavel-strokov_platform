@@ -674,5 +674,29 @@ rolebinding.rbac.authorization.k8s.io/dev-viewer-binding created
 
 
 
+# Выполнено ДЗ № 5
 
+ - [*] Основное ДЗ
+ - [*] Задание со *
 
+Запускаем кластер.
+
+Создаём описание для контерйнер minio [minio-statefulset.yaml](./kubernetes-volumes/minio-statefulset.yaml)
+
+Применяем манифест
+```bash
+kubectl apply -f minio-statefulset.yaml
+statefulset.apps/minio created
+```
+Смотрим что получили в итоге. Список томов.
+```bash
+kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
+pvc-439e9dcc-37ea-4ed4-9446-e801b7cdfce8   10Gi       RWO            Delete           Bound    default/data-minio-0   standard                110s
+```
+Запросы на создание томов.
+```bash
+get pvc
+NAME           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+data-minio-0   Bound    pvc-439e9dcc-37ea-4ed4-9446-e801b7cdfce8   10Gi       RWO            standard       119s
+```
