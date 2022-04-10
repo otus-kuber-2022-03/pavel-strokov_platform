@@ -1,2 +1,2 @@
-kubernetes-volumes/secret-key.txt
-kubernetes-volumes/access-key.txt
+kubernetes-volumes/access-key
+kubernetes-volumes/secret-key
