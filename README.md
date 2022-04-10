@@ -758,3 +758,5 @@ secret-key:  8 bytes
 Внесём изменения в файл [minio-statefulset.yaml](./kubernetes-volumes/minio-statefulset.yaml) так чтобы данные брались из созданного секрета.
 
 И применяем манифест.
+
+Создаём HeadLess Service [minio-headless-service.yaml](./kubernetes-volumes/minio-headless-service.yaml)
