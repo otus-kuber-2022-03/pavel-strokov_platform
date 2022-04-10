@@ -20,23 +20,19 @@ spec:
             secretName: minio-user-access
       containers:
       - name: minio
-        volumeMounts:
-          - name: minio-user-access
-            readOnly: true
-            mountPath: "/etc/minio-user-access"
         env:
         - name: MINIO_ACCESS_KEY
-#          value: "minio"
+          #value: "minio"
           valueFrom:
-            configMapKeyRef:
-              name: minio-user-access # The ConfigMap this value comes from.
-              key: access-key         # The key to fetch.
+            secretKeyRef:
+              name: minio-user-access
+              key: access-key
         - name: MINIO_SECRET_KEY
-#          value: "minio123"
+          #value: "minio123"
           valueFrom:
-            configMapKeyRef:
-              name: minio-user-access # The ConfigMap this value comes from.
-              key: secret-key         # The key to fetch.
+            secretKeyRef:
+              name: minio-user-access
+              key: secret-key
         image: minio/minio:RELEASE.2019-07-10T00-34-56Z
         args:
         - server
