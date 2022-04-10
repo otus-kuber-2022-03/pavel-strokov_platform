@@ -688,11 +688,17 @@ rolebinding.rbac.authorization.k8s.io/dev-viewer-binding created
 kubectl apply -f minio-statefulset.yaml
 statefulset.apps/minio created
 ```
-Смотрим что получили в итоге. Список томов.
+Смотрим что получили в итоге. 
 ```bash
-kubectl get pv
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
-pvc-439e9dcc-37ea-4ed4-9446-e801b7cdfce8   10Gi       RWO            Delete           Bound    default/data-minio-0   standard                110s
+kubectl get statefulsets
+NAME    READY   AGE
+minio   1/1     8m13s
+```
+Поды
+```bash
+kubectl get pods
+NAME      READY   STATUS    RESTARTS   AGE
+minio-0   1/1     Running   0          9m9s
 ```
 Запросы на создание томов.
 ```bash
@@ -700,3 +706,35 @@ get pvc
 NAME           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-minio-0   Bound    pvc-439e9dcc-37ea-4ed4-9446-e801b7cdfce8   10Gi       RWO            standard       119s
 ```
+Список томов.
+```bash
+kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
+pvc-439e9dcc-37ea-4ed4-9446-e801b7cdfce8   10Gi       RWO            Delete           Bound    default/data-minio-0   standard                110s
+```
+В качестве примера детализации 
+
+```bash
+kubectl describe pv pvc-439e9dcc-37ea-4ed4-9446-e801b7cdfce8
+Name:              pvc-439e9dcc-37ea-4ed4-9446-e801b7cdfce8
+Labels:            <none>
+Annotations:       pv.kubernetes.io/provisioned-by: rancher.io/local-path
+Finalizers:        [kubernetes.io/pv-protection]
+StorageClass:      standard
+Status:            Bound
+Claim:             default/data-minio-0
+Reclaim Policy:    Delete
+Access Modes:      RWO
+VolumeMode:        Filesystem
+Capacity:          10Gi
+Node Affinity:
+  Required Terms:
+    Term 0:        kubernetes.io/hostname in [kind-worker3]
+Message:
+Source:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/local-path-provisioner/pvc-439e9dcc-37ea-4ed4-9446-e801b7cdfce8_default_data-minio-0
+    HostPathType:  DirectoryOrCreate
+Events:            <none>
+```
+
