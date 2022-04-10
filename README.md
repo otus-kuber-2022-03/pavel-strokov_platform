@@ -738,3 +738,23 @@ Source:
 Events:            <none>
 ```
 
+Создаём манифест описания секрета. [secrets.yaml](./kubernetes-volumes/secrets.yaml) 
+Применяем его и смотрим что получилось.
+
+```bash
+kubectl describe secret minio-user-access
+Name:         minio-user-access
+Namespace:    default
+Labels:       app=minio
+Annotations:  <none>
+
+Type:  Opaque
+
+Data
+====
+access-key:  5 bytes
+secret-key:  8 bytes
+```
+Внесём изменения в файл [minio-statefulset.yaml](./kubernetes-volumes/minio-statefulset.yaml) так чтобы данные брались из созданного секрета.
+
+И применяем манифест.
