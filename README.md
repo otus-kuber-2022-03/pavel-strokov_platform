@@ -670,6 +670,71 @@ kubectl apply -f 05-role-ken.yaml
 rolebinding.rbac.authorization.k8s.io/dev-viewer-binding created
 ```
 
+# Выполнено ДЗ № 3
+
+ - [*] Основное ДЗ
+ - [ ] Задание со *
+
+### Работа с тестовым веб-приложением
+
+### Добавление проверок Pod
+
+Добавляем проверки readinessProbe в [web-pod.yml](./kubernetes-intro/web-pod.yml) из предыдущего задания.
+
+```bash
+kubectl apply -f web-pod.yaml 
+pod/web created
+
+kubectl get pod/web
+NAME   READY   STATUS     RESTARTS   AGE
+web    0/1     Init:0/1   0          39s
+
+kubectl describe pod/web
+
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             False
+  ContainersReady   False
+  PodScheduled      True
+...
+Events:
+  Warning  Unhealthy  7s (x3 over 16s)  kubelet   Readiness probe failed: Get "http://172.17.0.7:80/index.html": dial tcp 172.17.0.7:80: connect: connection refused
+```
+
+Добавим livenessProbe 
+
+```bash
+kubectl get pod/web
+NAME   READY   STATUS     RESTARTS   AGE
+web    0/1     Running    0          103s
+```
+
+1. Почему следующая конфигурация валидна, но не имеет смысла?
+```yaml
+livenessProbe:
+  exec:
+  command:
+    - 'sh'
+    - '-c'
+    - 'ps aux | grep my_web_server_process'
+```
+Даже наличие работающего процесса не гарантирует, что он работает корректно.
+
+2. Бывают ли ситуации, когда она все-таки имеет смысл?
+
+Например, когда нужно убедиться что процесс просто запустился. Например для выполнения какой-нибудь инициализации.
+
+### Деплоймент 
+
+Создаём деплоймент  [web-deployment.yml](./kubernetes-networks/web-deployment.yml) и применяем его
+
+kubectl delete pod/web --grace-period=0 --force
+kubectl apply -f web-deploy.yaml
+
+
+### Доступ к приложению извне кластера
+
 
 
 
