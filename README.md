@@ -723,7 +723,7 @@ livenessProbe:
 
 2. Бывают ли ситуации, когда она все-таки имеет смысл?
 
-Например, когда нужно убедиться что процесс просто запустился. Например для выполнения какой-нибудь инициализации.
+Например, когда нужно убедиться что процесс просто запустился. Или для выполнения какой-нибудь инициализации.
 
 ### Деплоймент 
 
@@ -733,7 +733,33 @@ kubectl delete pod/web --grace-period=0 --force
 kubectl apply -f web-deploy.yaml
 
 
+### Создание Service
+Создаём сервис [web-svc-cip.yaml](./kubernetes-networks/web-svc-cip.yaml)
+
+
 ### Доступ к приложению извне кластера
+
+ip addr show kube-ipvs0
+16: kube-ipvs0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN group default 
+    link/ether ce:09:69:b3:4c:0f brd ff:ff:ff:ff:ff:ff
+    inet 10.100.98.62/32 scope global kube-ipvs0
+       valid_lft forever preferred_lft forever
+    inet 172.17.255.1/32 scope global kube-ipvs0
+       valid_lft forever preferred_lft forever
+    inet 10.96.0.10/32 scope global kube-ipvs0
+       valid_lft forever preferred_lft forever
+    inet 10.96.0.1/32 scope global kube-ipvs0
+       valid_lft forever preferred_lft forever
+
+
+скачиваем файл https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml и сохраняем как bm-ns.yaml
+скачиваем файл https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml сохраняем как metallb.yaml
+Приводим в соответствие с текущими требованиями.
+
+Создаём секрет.
+kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+
+
 
 
 
