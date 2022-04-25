@@ -1,2 +1,3 @@
 kubernetes-volumes/secret/access-key
 kubernetes-volumes/secret/secret-key
+kubernetes-operators/deploy/secret/mysql_pass
