@@ -1,3 +1,4 @@
 kubernetes-volumes/secret/access-key
 kubernetes-volumes/secret/secret-key
 kubernetes-operators/deploy/secret/mysql_pass
+kubernetes-operators/build/__pycache__/mysql-operator.cpython-39.pyc
