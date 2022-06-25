@@ -3,12 +3,12 @@ kind: Service
 metadata:
   name: web-svc
 spec:
-  clusterIP: None
   selector:
     app: web
   type: ClusterIP
+  clusterIP: None
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 8000
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
 ...
