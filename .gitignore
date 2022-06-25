@@ -1,3 +1,4 @@
 /nbproject/private/
 kubernetes-volumes/secret/access-key
 kubernetes-volumes/secret/secret-key
+kubernetes-networks/run
