@@ -1,0 +1,6 @@
+#!/usr/bin/bash
+kubectl apply -f crd.yaml
+kubectl apply -f service-account.yml
+kubectl apply -f role.yml
+kubectl apply -f role-binding.yml
+kubectl apply -f deploy-operator.yml
