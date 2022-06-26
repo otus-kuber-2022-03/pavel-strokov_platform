@@ -9,7 +9,7 @@ def render_template(filename, vars_dict):
   env = Environment(loader=FileSystemLoader('./templates'))
   template = env.get_template(filename)
   yaml_manifest = template.render(vars_dict)
-  json_manifest = yaml.load(yaml_manifest)
+  json_manifest = yaml.load(yaml_manifest, Loader=yaml.FullLoader)
   return json_manifest
 
 def delete_success_jobs(mysql_instance_name):
@@ -17,19 +17,15 @@ def delete_success_jobs(mysql_instance_name):
   jobs = api.list_namespaced_job('default')
   for job in jobs.items:
     jobname = job.metadata.name
-    if (jobname == f"backup-{mysql_instance_name}-job") or \
-                (jobname == f"restore-{mysql_instance_name}-job"):
+    if (jobname == f"backup-{mysql_instance_name}-job") or (jobname == f"restore-{mysql_instance_name}-job"):
       if job.status.succeeded == 1:
-        api.delete_namespaced_job(jobname,
-                                  'default',
-                                  propagation_policy='Background')
+        api.delete_namespaced_job(jobname, 'default', propagation_policy='Background')
 
 def wait_until_job_end(jobname):
   api = kubernetes.client.BatchV1Api()
   job_finished = False
   jobs = api.list_namespaced_job('default')
-  while (not job_finished) and \
-        any(job.metadata.name == jobname for job in jobs.items):
+  while (not job_finished) and any(job.metadata.name == jobname for job in jobs.items):
     time.sleep(1)
     jobs = api.list_namespaced_job('default')
     for job in jobs.items:
@@ -47,24 +43,11 @@ def mysql_on_create(body, spec, **kwargs):
   storage_size = body['spec']['storage_size']
 
   # Генерируем JSON манифесты для деплоя
-  persistent_volume = render_template('mysql-pv.yml.j2',
-                                      {'name': name,
-                                       'storage_size': storage_size})
-  persistent_volume_claim = render_template('mysql-pvc.yml.j2',
-                                            {'name': name,
-                                             'storage_size': storage_size})
+  persistent_volume = render_template('mysql-pv.yml.j2', {'name': name, 'storage_size': storage_size})
+  persistent_volume_claim = render_template('mysql-pvc.yml.j2', {'name': name, 'storage_size': storage_size})
   service = render_template('mysql-service.yml.j2', {'name': name})
-  deployment = render_template('mysql-deployment.yml.j2', {
-      'name': name,
-      'image': image,
-      'password': password,
-      'database': database})
-
-  restore_job = render_template('restore-job.yml.j2', {
-    'name': name,
-    'image': image,
-    'password': password,
-    'database': database})
+  deployment = render_template('mysql-deployment.yml.j2', { 'name': name, 'image': image, 'password': password, 'database': database})
+  restore_job = render_template('restore-job.yml.j2', {'name': name, 'image': image, 'password': password, 'database': database})
 
   # Определяем, что созданные ресурсы являются дочерними к управляемому CustomResource:
   kopf.append_owner_reference(persistent_volume, owner=body)
@@ -87,14 +70,14 @@ def mysql_on_create(body, spec, **kwargs):
 
 # Cоздаем PVC и PV для бэкапов:
   try:
-    backup_pv = render_template('backup-pv.yml.j2', {'name': name})
+    backup_pv = render_template('backup-pv.yml.j2', {'name': name, 'storage_size': storage_size})
     api = kubernetes.client.CoreV1Api()
     api.create_persistent_volume(backup_pv)
   except kubernetes.client.rest.ApiException:
     pass
 
   try:
-    backup_pvc = render_template('backup-pvc.yml.j2', {'name': name})
+    backup_pvc = render_template('backup-pvc.yml.j2', {'name': name, 'storage_size': storage_size})
     api = kubernetes.client.CoreV1Api()
     api.create_namespaced_persistent_volume_claim('default', backup_pvc)
   except kubernetes.client.rest.ApiException:
@@ -115,18 +98,13 @@ def delete_object_make_backup(body, **kwargs):
   password = body['spec']['password']
   database = body['spec']['database']
   
-  persistent_volume = render_template('mysql-pv.yml.j2',
-                                      {'name': name})
+  persistent_volume = render_template('mysql-pv.yml.j2',{'name': name})
   # persistent_volume = name+'-pv'
   delete_success_jobs(name)
   
   # Cоздаем backup job:
   api = kubernetes.client.BatchV1Api()
-  backup_job = render_template('backup-job.yml.j2', {
-    'name': name,
-    'image': image,
-    'password': password,
-    'database': database})
+  backup_job = render_template('backup-job.yml.j2', {'name': name,'image': image,'password': password,'database': database})
   api.create_namespaced_job('default', backup_job)
   wait_until_job_end(f"backup-{name}-job")
   
