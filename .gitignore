@@ -1,2 +1,8 @@
 kubernetes-volumes/secret/access-key
 kubernetes-volumes/secret/secret-key
+kubernetes-networks/run
+.gitignore
+kubernetes-operators/run
+kubernetes-operators/tests
+kubernetes-operators/makedeploy
+kubernetes-operators/build/__pycache__/mysql-operator.cpython-310.pyc
