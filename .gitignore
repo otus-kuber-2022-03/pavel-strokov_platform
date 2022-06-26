@@ -4,3 +4,4 @@ kubernetes-operators/deploy/secret/mysql_pass
 kubernetes-operators/build/__pycache__/mysql-operator.cpython-39.pyc
 run
 kubernetes-operators/build/__pycache__/mysql-operator.cpython-310.pyc
+kubernetes-operators/tests
