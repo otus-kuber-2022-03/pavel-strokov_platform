@@ -760,3 +760,313 @@ secret-key:  8 bytes
 И применяем манифест.
 
 Создаём HeadLess Service [minio-headless-service.yaml](./kubernetes-volumes/minio-headless-service.yaml)
+
+
+
+# Выполнено ДЗ Подходы к развертыванию
+
+ - [*] Основное ДЗ
+ - [*] Задание со *
+
+В процессе выполнения задания сделал некоторые изменения, которые не повлияли на конечный результат.
+Для выполнения задания воспользовался PC с установленным Proxmox 7.2.
+
+Были созданы 4 виртуальных машины на Базе Ubuntu 18.04-LTS как рекомендовано в задании. 
+
+master-node [192.168.1.190]
+
+worker1-node [192.168.1.191]
+
+worker2-node [192.168.1.192]
+
+worker3-node [192.168.1.193] 
+
+ 
+ На всех машинах было выполнено следующее:
+ 1. Отключен swap.
+```bash
+swapoff -a
+```
+
+ закоментировано монтирование swap раздела в /etc/fstab
+
+ Для обеспечения маршрутизации были созданы файлы [/etc/modules-load.d/k8s.conf](./kubernetes-deploy/etc/modules-load.d/k8s.conf) и [/etc/sysctl.d/k8s.conf](./kubernetes-deploy/etc/sysctl.d/k8s.conf)
+
+Выполнена команда
+```bash
+sudo sysctl --system
+```
+
+
+Установлены дополнительные пакеты
+```bash
+sudo apt update 
+sudo apt-get install -y apt-transport-https curl
+```
+
+Подключен репозиторий docker
+
+```bash
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+Установлен docker рекомендованной версии
+
+```bash
+apt-get update
+apt-get install -y containerd.io=1.2.13-1 docker-ce=5:19.03.8~3-0~ubuntu-$(lsb_release -cs) docker-ce-cli=5:19.03.8~3-0~ubuntu-$(lsb_release -cs)
+
+systemctl enable docker
+```
+
+Затем был создан файл настроек docker [/etc/docker/daemon.json](./kubernetes-deploy/etc/docker/daemon.json), для того, чтобы изменить драйвер cgroup на systemd.
+
+Docker был перезапущен
+
+```bash
+systemctl restart docker
+```
+
+
+Подключаем репозиторий kubernetes 
+
+```bash
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+```
+
+
+Создаём файл [/etc/apt/sources.list.d/kubernetes.list](./kubernetes-deploy/etc/apt/sources.list.d/kubernetes.list)
+
+Устанавливаем нужные пакеты
+
+```bash
+apt-get update
+apt-get install -y kubelet=1.17.4-00 kubeadm=1.17.4-00 kubectl=1.17.4-00
+```
+
+Завпрещаем автоматическое обновление этих пакетов
+
+```bash
+apt-mark hold kubelet kubeadm kubectl
+```
+
+
+Запускаем процесс установки кластера на ведущнм узле master-node
+
+```bash
+kubeadm init --pod-network-cidr=192.168.0.0/24
+```
+
+
+Дожидаемся сообщения об успехе операции
+
+Your Kubernetes control-plane has initialized successfully!
+
+Копируем настройки кластера в домашний каталог пользователя, от которого будем выполнять остальные операции.
+
+```bash
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+  Так же мы получили инструкцию о подключении рабочих нод к узлу.
+
+```bash
+kubeadm join 192.168.1.190:6443 --token krikag.mb2rvqg0qs19mwak \
+  --discovery-token-ca-cert-hash sha256:f81864b46c4ba6911b5dbf53dc46a87cb822eb7822e6a7347483ac73fc22f7cb
+```
+
+Устанавливаем сетевой плагин. Текущий плагин calico не захотел работать с устаревшей версией kubernetes, поэтому был заменён на flannel.
+
+```bash
+kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
+```
+
+
+После этого выполняем команду присоединения рабочих нод на всех трёх worker узлах.
+
+На мастер узле выполняем
+
+```bash
+kubectl get nodes
+```
+
+
+Получаем следующий результат
+
+```bash
+NAME           STATUS   ROLES    AGE     VERSION
+master-node    Ready    master   8h      v1.17.4
+worker1-node   Ready    <none>   8h      v1.17.4
+worker2-node   Ready    <none>   8h      v1.17.4
+worker3-node   Ready    <none>   8h      v1.17.4
+```
+
+
+Имеем кластер версии v1.17.4
+
+Создаём [deployment.yaml](./kubernetes-deploy/deployment.yaml)
+
+Применяем его
+
+```bash
+kubectl apply -f deployment.yaml
+deployment.apps/nginx-deployment created
+```
+
+
+Приступаем к обновлению кластера.
+
+Сначала производим обновление master-node.
+
+```bash
+apt-get update && apt-get install -y kubeadm=1.18.0-00 kubelet=1.18.0-00 kubectl=1.18.0-00 --allow-change-held-packages
+```
+
+Через некоторое время проверяем состояние
+
+```bash
+pstrokov@master-node:~$ kubectl get nodes
+NAME           STATUS   ROLES    AGE   VERSION
+master-node    Ready    master   9h    v1.18.0
+worker1-node   Ready    <none>   8h    v1.17.4
+worker2-node   Ready    <none>   8h    v1.17.4
+worker3-node   Ready    <none>   8h    v1.17.4
+```
+
+
+Проверяем план обновления
+
+kubeadm upgrade plan
+
+И запускаем его
+
+kubeadm upgrade apply v1.18.20
+
+
+Начинаем обновление рабочих узлов
+
+kubectl drain worker1-node --ignore-daemonsets
+node/worker1-node cordoned
+
+WARNING: ignoring DaemonSet-managed Pods: kube-system/kube-flannel-ds-jpk8g, kube-system/kube-proxy-qstq6
+evicting pod default/nginx-deployment-c8fd555cc-qkcvt
+evicting pod default/nginx-deployment-c8fd555cc-qnfp2
+evicting pod kube-system/coredns-66bff467f8-svcmb
+evicting pod kube-system/coredns-6955765f44-rpdzw
+pod/coredns-6955765f44-rpdzw evicted
+pod/coredns-66bff467f8-svcmb evicted
+pod/nginx-deployment-c8fd555cc-qkcvt evicted
+pod/nginx-deployment-c8fd555cc-qnfp2 evicted
+node/worker1-node evicted
+
+Проверяем состояние
+pstrokov@master-node:~$ kubectl get nodes
+NAME           STATUS                     ROLES    AGE   VERSION
+master-node    Ready                      master   9h    v1.18.0
+worker1-node   Ready,SchedulingDisabled   <none>   9h    v1.17.4
+worker2-node   Ready                      <none>   9h    v1.17.4
+worker3-node   Ready                      <none>   9h    v1.17.4
+
+Можно обновлять версию kubernetes на узле worker1-node
+
+Заходим на узел
+Выполняем команду
+
+apt-get update && apt-get install -y kubeadm=1.18.0-00 kubelet=1.18.0-00 kubectl=1.18.0-00 --allow-change-held-packages
+
+После обновления проверяем статус
+
+pstrokov@master-node:~$ kubectl get nodes
+NAME           STATUS                     ROLES    AGE   VERSION
+master-node    Ready                      master   9h    v1.18.0
+worker1-node   Ready,SchedulingDisabled   <none>   9h    v1.18.0
+worker2-node   Ready                      <none>   9h    v1.17.4
+worker3-node   Ready                      <none>   9h    v1.17.4
+
+Можно вводить узел в эксплуатацию
+
+```bash
+pstrokov@master-node:~$ kubectl uncordon worker1-node
+node/worker1-node uncordoned
+```
+
+Производим аналогичные действия для остальных узлов.
+
+Окончательныый статус
+
+```bash
+pstrokov@master-node:~$ kubectl get nodes
+NAME           STATUS   ROLES    AGE   VERSION
+master-node    Ready    master   9h    v1.18.0
+worker1-node   Ready    <none>   9h    v1.18.0
+worker2-node   Ready    <none>   9h    v1.18.0
+worker3-node   Ready    <none>   9h    v1.18.0
+```
+
+
+# [*] Установка кластера kubernetes при помощи kuberspray.
+Установку проводим на наборе виртуальных машин в системе виртуализации Proxmox 7.2
+
+Создаём виртуальную машину на базе CentOs7  и клонируем её в 5 виртуальных машин
+Отключаем файервол, так как установку производим внутри безопасного окружения. (настройка займёт больше времени :))
+
+192.168.1.91 master1-k8s master1-k8s.strokov.net  2Core/4Gb/50Gb
+
+192.168.1.92 master2-k8s master2-k8s.strokov.net  2Core/4Gb/50Gb
+
+192.168.1.93 master3-k8s master3-k8s.strokov.net  2Core/4Gb/50Gb
+
+192.168.1.94 worker1-k8s worker1-k8s.strokov.net  4Core/8Gb/50Gb
+
+192.168.1.95 worker2-k8s worker2-k8s.strokov.net  4Core/8Gb/50Gb
+
+
+На отдельной машине в VirtualBox устанавливаем ansible и python3
+Клонируем репозиторий 
+
+```bash
+git clone https://github.com/kubernetes-sigs/kubespray.git
+```
+
+В репозитории производим установку зависимостей
+
+```bash
+sudo pip install -r requirements.txt
+```
+
+
+Копируем пример конфига в отдельный каталог
+
+```bash
+cp -rfp inventory/sample inventory/mycluster
+```
+
+
+Полученный файл [inventory/mycluster/inventory.ini](./kubernetes-deploy/inventory.ini) заполняем своими настройками.
+
+Запускаем плейбук 
+
+```bash
+ansible-playbook -i inventory/mycluster/inventory.ini --user=root -k cluster.yml
+```
+
+
+Вводим пароль root и примерно 20 минут наблюдаем вывод на экране.
+
+После завершения процесса проверяем результат 
+
+```bash
+[root@master1-k8s ~]# kubectl get nodes
+NAME          STATUS   ROLES           AGE   VERSION
+master1-k8s   Ready    control-plane   22h   v1.24.2
+master2-k8s   Ready    control-plane   22h   v1.24.2
+master3-k8s   Ready    control-plane   22h   v1.24.2
+worker1-k8s   Ready    <none>          22h   v1.24.2
+worker2-k8s   Ready    <none>          22h   v1.24.2
+```
