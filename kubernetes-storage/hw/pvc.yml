@@ -3,9 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: storage-pvc
 spec:
-  storageClassName: "iscsi-targetd-vg-targetd"
-  accessModes:
-    - ReadWriteOnce
+  storageClassName: csi-hostpath-sc
+  accessModes: 
+  - ReadWriteOnce
   resources:
     requests:
-      storage: 100Mi
+      storage: 1Gi
