@@ -1,0 +1,12 @@
+ kind: StorageClass
+ apiVersion: storage.k8s.io/v1
+ metadata:
+   name: iscsi-targetd-vg-targetd
+ provisioner: iscsi-targetd
+ parameters:
+   targetPortal: 192.168.1.98
+   iqn: iqn.2022-07.net.strokov.storage-k8s:disk1
+   iscsiInterface: default
+   volumeGroup: vg-targetd
+   chapAuthDiscovery: "false"
+   chapAuthSession: "false"
