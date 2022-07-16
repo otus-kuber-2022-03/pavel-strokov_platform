@@ -760,3 +760,4 @@ secret-key:  8 bytes
 И применяем манифест.
 
 Создаём HeadLess Service [minio-headless-service.yaml](./kubernetes-volumes/minio-headless-service.yaml)
+
