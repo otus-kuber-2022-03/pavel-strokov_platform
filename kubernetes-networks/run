@@ -1,0 +1,20 @@
+#!/bin/bash
+kubectl apply -f web-deploy.yaml
+kubectl apply -f web-svc-cip.yaml
+kubectl get services
+#kubectl --namespace kube-system edit configmap/kube-proxy
+#kubectl --namespace kube-system delete pod --selector='k8s-app=kube-proxy'
+#
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
+kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+kubectl --namespace metallb-system get all
+kubectl apply -f metallb-config.yaml
+kubectl apply -f web-svc-lb.yaml
+#kubectl --namespace metallb-system logs  .....
+#sudo ip route add 172.17.255.0/24 via 192.168.49.2
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/deploy.yaml
+kubectl apply -f nginx-lb.yaml 
+kubectl apply -f web-svc-headless.yaml
+kubectl apply -f web-ingress.yaml
+sudo ip route add 172.17.255.0/24 via 192.168.49.2

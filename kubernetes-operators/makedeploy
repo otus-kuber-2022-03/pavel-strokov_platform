@@ -1,0 +1,7 @@
+#!/usr/bin/bash
+kubectl apply -f deploy/crd.yml
+kubectl apply -f deploy/service-account.yml
+kubectl apply -f deploy/role.yml
+kubectl apply -f deploy/role-binding.yml
+kubectl apply -f deploy/deploy-operator.yml
+kubectl apply -f deploy/cr.yml

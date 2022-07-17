@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+kubectl apply -f deploy/crd.yml
+#kubectl apply -f deploy/cr.yml
